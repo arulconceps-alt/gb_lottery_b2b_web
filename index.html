@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="/">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="GB Lottery B2B - Buy and manage lottery tickets on the go">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="GB Lottery B2B">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png" />
+
+  <title>GB Lottery B2B</title>
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    html {
+      overflow: hidden;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    #app-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: #1C1B20;
+      color: #DFC55C;
+    }
+  </style>
+
+  <!-- PWA Install Prompt Handler -->
+  <script>
+    let deferredPrompt;
+
+    // Listen for the beforeinstallprompt event
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      console.log('[PWA] Install prompt ready');
+
+      // Signal to Flutter that install prompt is available
+      if (window.flutterWebRenderer) {
+        window.flutterWebRenderer.signalPWAInstallReady = true;
+      }
+
+      // Store in sessionStorage for Flutter to access
+      sessionStorage.setItem('pwa_install_ready', 'true');
+      window.pwaPrompt = deferredPrompt;
+    });
+
+    window.addEventListener('appinstalled', () => {
+      console.log('[PWA] App installed successfully');
+      deferredPrompt = null;
+      sessionStorage.removeItem('pwa_install_ready');
+    });
+
+    // Global function for Flutter to trigger install
+    window.triggerPWAInstall = function () {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('[PWA] User accepted the install prompt');
+          } else {
+            console.log('[PWA] User dismissed the install prompt');
+          }
+          deferredPrompt = null;
+        });
+      }
+    };
+  </script>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        // Register Firebase Messaging Service Worker
+        navigator.serviceWorker.register('/firebase-messaging-sw.js')
+          .then(registration => {
+            console.log('[Web] Firebase Service Worker registered:', registration);
+          })
+          .catch(error => {
+            console.error('[Web] Firebase Service Worker registration failed:', error);
+          });
+
+        // Also register a PWA service worker if available
+        navigator.serviceWorker.register('/pwa-sw.js')
+          .then(registration => {
+            console.log('[Web] PWA Service Worker registered:', registration);
+          })
+          .catch(error => {
+            console.warn('[Web] PWA Service Worker registration not critical:', error);
+          });
+      });
+
+      // Check for service worker updates
+      setInterval(() => {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          registrations.forEach(registration => {
+            registration.update();
+          });
+        });
+      }, 60000); // Check every minute
+    } else {
+      console.warn('[Web] Service Workers not supported');
+    }
+  </script>
+</head>
+
+<body>
+  <!--
+    You can customize the "flutter_bootstrap.js" script.
+    This is useful to provide a custom configuration to the Flutter loader
+    or to give the user feedback during the initialization process.
+
+    For more details:
+    * https://docs.flutter.dev/platform-integration/web/initialization
+  -->
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+
+</html>

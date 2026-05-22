@@ -102,25 +102,14 @@
   <!-- Service Worker Registration -->
   <script>
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function () {
-        // Register Firebase Messaging Service Worker
-        navigator.serviceWorker.register('/firebase-messaging-sw.js')
-          .then(registration => {
-            console.log('[Web] Firebase Service Worker registered:', registration);
-          })
-          .catch(error => {
-            console.error('[Web] Firebase Service Worker registration failed:', error);
-          });
-
-        // Also register a PWA service worker if available
-        navigator.serviceWorker.register('/pwa-sw.js')
-          .then(registration => {
-            console.log('[Web] PWA Service Worker registered:', registration);
-          })
-          .catch(error => {
-            console.warn('[Web] PWA Service Worker registration not critical:', error);
-          });
-      });
+      // Register a single root service worker that handles both Firebase Messaging and PWA features.
+      navigator.serviceWorker.register('/firebase-messaging-sw.js')
+        .then(registration => {
+          console.log('[Web] Service Worker registered:', registration);
+        })
+        .catch(error => {
+          console.error('[Web] Service Worker registration failed:', error);
+        });
 
       // Check for service worker updates
       setInterval(() => {
